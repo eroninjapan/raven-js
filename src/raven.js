@@ -9,6 +9,7 @@ var isFunction = utils.isFunction;
 var isUndefined = utils.isUndefined;
 var isError = utils.isError;
 var isEmptyObject = utils.isEmptyObject;
+var isEvent = utils.isEvent;
 var hasKey = utils.hasKey;
 var joinRegExp = utils.joinRegExp;
 var each = utils.each;
@@ -289,6 +290,12 @@ Raven.prototype = {
      * @return {Raven}
      */
     captureException: function(ex, options) {
+        // If an Event object is passed though (which often happens on older Andriod  
+        // browsers) copy any additional information from the event to the options
+        if (isEvent(ex)) {
+            options = this._handleEvent(ex, options);
+            return this.captureMessage(ex.toString(), options);
+        } 
         // If not an Error is passed through, recall as a message instead
         if (!isError(ex)) return this.captureMessage(ex, options);
 
@@ -1096,6 +1103,20 @@ Raven.prototype = {
         } else {
             this._globalContext[key] = objectMerge(this._globalContext[key] || {}, context);
         }
+    },
+    
+    // Copy all the properties of an Event object to options.extra
+    _handleEvent: function(event, options) {
+        options = options || {};
+        options.extra = options.extra || {};
+
+        for (var property in event) {
+            if (event.hasOwnProperty(property)) {
+                options.extra[property] = event[property];
+            }
+        }
+
+        return options
     }
 };
 

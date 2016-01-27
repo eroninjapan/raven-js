@@ -67,6 +67,21 @@ describe('integration', function () {
                 }
             );
         });
+
+        it('should capture [object Event] in Raven.captureException', function (done) {
+            var iframe = this.iframe;
+            iframeExecute(iframe, done, function () { 
+                    setTimeout(done);
+                    var evt = document.createEvent('Event')
+                    evt.testData = 'test';
+                    Raven.captureException(evt);
+                },
+                function () {
+                    var ravenData = iframe.contentWindow.ravenData[0];
+                    assert.isTrue(ravenData.extra.testData === 'test')
+                }
+            );
+        })
     });
 
     describe('window.onerror', function () {

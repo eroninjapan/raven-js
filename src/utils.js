@@ -31,6 +31,10 @@ function isError(what) {
         what instanceof Error;
 }
 
+function isEvent(what) {
+    return what instanceof Event;
+}
+
 function each(obj, callback) {
     var i, j;
 
@@ -145,6 +149,7 @@ module.exports = {
     isObject: isObject,
     isEmptyObject: isEmptyObject,
     isError: isError,
+    isEvent: isEvent,
     each: each,
     objectMerge: objectMerge,
     truncate: truncate,
