@@ -1109,10 +1109,14 @@ Raven.prototype = {
     _handleEvent: function(event, options) {
         options = options || {};
         options.extra = options.extra || {};
+        options.extra.eventOwnProps =  {};
+
 
         for (var property in event) {
             if (event.hasOwnProperty(property)) {
                 options.extra[property] = event[property];
+            } else {
+                options.extra.eventOwnProps = event[property];
             }
         }
 
