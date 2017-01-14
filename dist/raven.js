@@ -418,6 +418,13 @@ Raven.prototype = {
      * @return {Raven}
      */
     captureException: function(ex, options) {
+        // If an Event object is passed though (which often happens on older Andriod
+        // browsers) copy any additional information from the event to the options
+        if (isEvent(ex)) {
+            options = this._handleEvent(ex, options);
+            return this.captureMessage(ex.toString(), options);
+        }
+
         // If not an Error is passed through, recall as a message instead
         if (!isError(ex)) {
             return this.captureMessage(ex, objectMerge({
@@ -1606,6 +1613,23 @@ Raven.prototype = {
         } else {
             this._globalContext[key] = objectMerge(this._globalContext[key] || {}, context);
         }
+    },
+
+    // Copy all the properties of an Event object to options.extra
+    _handleEvent: function(event, options) {
+        options = options || {};
+        options.extra = options.extra || {};
+        options.extra.eventOwnProps =  {};
+
+        for (var property in event) {
+            if (event.hasOwnProperty(property)) {
+                options.extra[property] = event[property];
+            } else {
+                options.extra.eventOwnProps = event[property];
+            }
+        }
+
+        return options;
     }
 };
 
@@ -1636,6 +1660,10 @@ function isObject(what) {
 function isEmptyObject(what) {
     for (var _ in what) return false;  // eslint-disable-line guard-for-in, no-unused-vars
     return true;
+}
+
+function isEvent(what) {
+    return what instanceof Event;
 }
 
 // Sorta yanked from https://github.com/joyent/node/blob/aa3b4b4/lib/util.js#L560
@@ -1873,6 +1901,7 @@ if (typeof __DEV__ !== 'undefined' && __DEV__) {
         isString: isString,
         isObject: isObject,
         isEmptyObject: isEmptyObject,
+        isEvent: isEvent,
         isError: isError,
         each: each,
         objectMerge: objectMerge,
